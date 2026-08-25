@@ -78,3 +78,6 @@ class DashboardOut(BaseModel):
     monthlyBudget: float
     remainingBudget: float
     categoryWiseSpending: Dict[str, float]
+    currentMonthSpending: float
+    previousMonthSpending: float
+    percentChangeFromLastMonth: float

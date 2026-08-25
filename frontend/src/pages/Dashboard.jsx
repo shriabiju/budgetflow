@@ -33,6 +33,9 @@ export default function Dashboard() {
   const [remainingBudget, setRemainingBudget] = useState(0)
   const [topCategory, setTopCategory] = useState('-')
   const [categories, setCategories] = useState({})
+  const [currentMonthSpending, setCurrentMonthSpending] = useState(0)
+  const [previousMonthSpending, setPreviousMonthSpending] = useState(0)
+  const [percentChange, setPercentChange] = useState(0)
 
   useEffect(() => {
     if (!userId) navigate('/login')
@@ -65,6 +68,10 @@ export default function Dashboard() {
       const topCat = Object.entries(cats).sort((a, b) => b[1] - a[1])[0]
       setTopCategory(topCat ? topCat[0] : '-')
       setCategories(cats)
+
+      setCurrentMonthSpending(data.currentMonthSpending || 0)
+      setPreviousMonthSpending(data.previousMonthSpending || 0)
+      setPercentChange(data.percentChangeFromLastMonth || 0)
     } catch (e) {
       console.error('Dashboard load error:', e)
     }
@@ -93,6 +100,11 @@ export default function Dashboard() {
     },
   }
 
+  const budgetUsagePercent = monthlyBudget > 0 ? (currentMonthSpending / monthlyBudget) * 100 : 0
+  const showBudgetAlert = monthlyBudget > 0 && budgetUsagePercent >= 80
+  const isOverBudget = budgetUsagePercent >= 100
+  const isIncrease = percentChange >= 0
+
   return (
     <>
       <Navbar active="dashboard" />
@@ -108,6 +120,15 @@ export default function Dashboard() {
             ))}
           </select>
         </div>
+
+        {showBudgetAlert && (
+          <div className={`budget-alert-banner ${isOverBudget ? 'over' : 'near'}`}>
+            <i className="fas fa-exclamation-triangle me-2"></i>
+            {isOverBudget
+              ? `You've gone over your budget for this month (${budgetUsagePercent.toFixed(0)}% used).`
+              : `You're at ${budgetUsagePercent.toFixed(0)}% of your monthly budget — getting close to the limit.`}
+          </div>
+        )}
 
         <div className="row g-4">
           <div className="col-md-3">
@@ -132,10 +153,13 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="col-md-3">
-            <div className="stat-card red">
-              <div className="stat-icon">📊</div>
-              <div className="stat-label">Top Category</div>
-              <div className="stat-value">{topCategory}</div>
+            <div className={`stat-card ${isIncrease ? 'red' : 'green'}`}>
+              <div className="stat-icon">{isIncrease ? '📈' : '📉'}</div>
+              <div className="stat-label">vs Last Month</div>
+              <div className="stat-value">
+                {isIncrease ? '+' : ''}{percentChange.toFixed(1)}%
+              </div>
+              <div className="stat-sub">₹{previousMonthSpending.toFixed(2)} last month</div>
             </div>
           </div>
         </div>

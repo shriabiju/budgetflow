@@ -33,6 +33,10 @@ def root():
 
 
 if __name__ == "__main__":
+    import os
     import uvicorn
-    # Same port as the original (server.port=8080)
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8080, reload=True)
+    # Render assigns a dynamic port via the PORT env var; locally it falls back to 8080.
+    port = int(os.getenv("PORT", 8080))
+    # Auto-reload is a dev convenience only — disable it when PORT is set by the platform.
+    is_local = "PORT" not in os.environ
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=is_local)

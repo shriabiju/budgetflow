@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import { API_BASE } from '../api.js'
 
-const CATEGORIES = ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'Health']
+const CATEGORIES = ['Hosting', 'APIs', 'Domains', 'Courses', 'Subscriptions', 'Other']
 
 const CATEGORY_COLORS = {
-  Food: '#f59e0b', Travel: '#4cc9f0', Shopping: '#a855f7',
-  Bills: '#ff6363', Entertainment: '#4361ee', Health: '#4cc996',
+  Hosting: '#f59e0b', APIs: '#4cc9f0', Domains: '#a855f7',
+  Courses: '#ff6363', Subscriptions: '#4361ee', Other: '#4cc996',
 }
 
 function todayISO() {
@@ -192,6 +192,13 @@ export default function Expenses() {
                   <option value="">All Categories</option>
                   {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
                 </select>
+                <a
+                  href={`${API_BASE}/api/expenses/user/${userId}/export`}
+                  className="btn-export"
+                  download
+                >
+                  <i className="fas fa-download me-1"></i>Export CSV
+                </a>
               </div>
 
               <div className="expense-table-wrapper">

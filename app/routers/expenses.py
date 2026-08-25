@@ -1,7 +1,10 @@
 from datetime import date as date_type
 from typing import List
+import csv
+import io
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -92,3 +95,27 @@ def get_total_spending(user_id: int, db: Session = Depends(get_db)):
         .scalar()
     )
     return total if total is not None else 0.0
+
+
+@router.get("/user/{user_id}/export")
+def export_expenses_csv(user_id: int, db: Session = Depends(get_db)):
+    """Exports all of a user's expenses as a downloadable CSV — useful for taxes/records."""
+    expenses = (
+        db.query(models.Expense)
+        .filter(models.Expense.user_id == user_id)
+        .order_by(models.Expense.date)
+        .all()
+    )
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["Date", "Title", "Category", "Amount", "Description"])
+    for e in expenses:
+        writer.writerow([e.date, e.title, e.category, e.amount, e.description or ""])
+    buffer.seek(0)
+
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=expenses.csv"},
+    )
